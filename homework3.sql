@@ -15,12 +15,14 @@
 select * 
 from employees e 
 where manager_id  = (
-	select *
+	select employee_id 
 	from employees e 
 	-- join employees h on h.employee_id::int = e.manager_id::int
 	where e.first_name = 'Nancy'
 )
 
+
+select * from jobs
 
 --Write a query in SQL to display the full name (first name and last name), hire date, commission percentage, 
 --email and telephone separated by '-', and salary for those employees who earn the salary above 11000 or the 
@@ -164,9 +166,9 @@ with manager_employee  as
 (
 select d.department_name ,  e.manager_id,  count(*) as emp_count
 from employees e 
-join departments d on d.department_id = e.department_id 
-where e.manager_id is not null
+join departments d on d.department_id = e.department_id and e.manager_id is not null
 group by e.department_id, e.manager_id, d.department_name 
+
 
 )
 
@@ -533,19 +535,120 @@ having count(*) > 1
 -- 45 Write a query to display the employee id, name ( first name and last name ) and the job id column with a modified
 -- title SALESMAN for those employees whose job title is ST_MAN and DEVELOPER for whose job title is IT_PROG.
 
-select employee_id, concat(first_name, ' ', last_name )as name , e.job_id , j.job_title
+select e.employee_id, concat(first_name, ' ', last_name )as name , e.job_id , j.job_title,
+	case 
+		when j.job_title = 'Programmer' then 'Developer'
+	end
+	as job
+	
+from employees e 
+join jobs j on j.job_id = e.job_id  
+
+
+-- 46 Write a query to display the employee id, name ( first name and last name ), salary and the SalaryStatus column with a 
+--title HIGH and LOW respectively for those employees whose salary is more than and less than the average salary of all employees.
+
+
+select e.employee_id, concat(first_name, ' ', last_name )as name , salary,
+case 
+	when e.salary > (select avg(salary) from employees e2) then 'High'
+	when e.salary < (select avg(salary) from employees e2) then 'Low'
+end
+from employees e 
+group by e.employee_id  
+
+
+--47 Write a query to display the employee id, name ( first name and last name ), SalaryDrawn, AvgCompare (salary -
+-- the average salary of all employees) and the SalaryStatus column with a title HIGH and LOW respectively for 
+-- those employees whose salary is more than and less than the average salary of all employees.
+
+select e.employee_id, concat(first_name, ' ', last_name )as name , salary, salary - (select avg(salary) from employees e3 ),
+case 
+	when e.salary > (select avg(salary) from employees e2) then 'High'
+	when e.salary < (select avg(salary) from employees e2) then 'Low'
+end
 from employees e 
 
+--48 Write a subquery that returns a set of rows to find all departments that do actually have one or more employees 
+--assigned to them.
+select d.department_name , count(*) 
+from employees e
+join departments d on d.department_id = e.department_id 
+group by (e.department_id), d.department_name 
+having count(*) > 4
+
+
+-- 49 Write a query that will identify all employees who work in departments located in the United Kingdom. 
+select e.*
+from departments d  
+left join locations l on l.location_id = d.location_id 
+right join employees e on e.department_id = d.department_id 
+where l.country_id  ilike 'uk' 
+
+
+--50 Write a query to identify all the employees who earn more than the average and who work in any of the IT departments.
+select e.* , d.department_name 
+from employees e 
+join departments d on d.department_id = e.department_id 
+where salary > (
+	select avg(salary) from employees
+) and department_name = 'IT'
+
+
+-- 51 Write a query to determine who earns more than Mr. Ozer.
+select * 
+from employees e 
+where salary > (
+	select salary 
+	from employees e2 
+	where first_name ilike '%diana%'
+		or last_name ilike '%diana%'
+)
+
+-- 52 Write a query to find out which employees have a manager who works for a department based in the US
+select e.*
+from employees e 
+join departments d on d.department_id = e.department_id 
+join locations l on l.location_id  = d.location_id 
+where l.country_id ilike 'us'
+
+
+-- 53 Write a query which is looking for the names of all employees whose salary is greater than 50% of
+-- their department’s total salary bill
+--
+--select  first_name 
+--from employees e 
+--where salary > (
+--	select percentile_cont(0.5) within group (order by salary)
+--	
+--	from employees )
+
+
+--54 Write a query to get the details of employees who are managers
+select * 
+from employees e 
+where employee_id in (
+select manager_id 
+from employees e2 
+)
+
+--56 Write a query to display the employee id, name ( first name and last name ), salary, department name and 
+--  city for all the employees who gets the salary as the salary earn by the employee which is maximum within 
+--  the joining person January 1st, 2002 and December 31st, 2003
+
+
+
+--57 Write a query in SQL to display the department code and name for all departments which located in the city London.
+ 
 
 
 
 
-select * from departments d  
 
 
-select * from employees e
-order by salary desc
- limit 10
+
+
+
 
 
 
